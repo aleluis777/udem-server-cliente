@@ -8,7 +8,7 @@ export async function GET() {
     const db = client.db();
     const usersCollection = db.collection("users");
 
-    const users = await usersCollection.find({}).toArray();
+    const users = await usersCollection.find({}).sort({ endedAt: 1 }).toArray();
 
     const subsCollection = db.collection("subscriptions");
     const subscriptions = await subsCollection.find({}).toArray();

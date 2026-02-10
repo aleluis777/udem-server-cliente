@@ -42,6 +42,26 @@ export default function UsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<IUserDTO | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  async function toggleStatus(user: IUserDTO) {
+    setTogglingId(user.id);
+    const newStatus = user.status === "active" ? "inactive" : "active";
+    try {
+      const res = await fetch(`/api/users/${user.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error("Error al cambiar estado");
+      const updated = await res.json();
+      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+    } catch {
+      alert("No se pudo cambiar el estado del usuario");
+    } finally {
+      setTogglingId(null);
+    }
+  }
 
   useEffect(() => {
     fetch("/api/users")
@@ -113,14 +133,16 @@ export default function UsersPage() {
                   <td className="px-5 py-4 text-gray-600 dark:text-gray-300">{user.phone ?? "—"}</td>
                   <td className="px-5 py-4 text-sm text-gray-600 dark:text-gray-300">{user.suscription?.name ?? "—"}</td>
                   <td className="px-5 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[user.status]}`}
+                    <button
+                      onClick={() => toggleStatus(user)}
+                      disabled={togglingId === user.id}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-wait ${statusColors[user.status]}`}
                     >
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${statusDots[user.status]}`}
                       />
-                      {statusLabels[user.status]}
-                    </span>
+                      {togglingId === user.id ? "..." : statusLabels[user.status]}
+                    </button>
                   </td>
                   <td className="px-5 py-4 text-sm">
                     <div className="flex items-center gap-2">

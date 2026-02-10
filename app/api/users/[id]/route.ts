@@ -9,11 +9,11 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { suscriptionId, endedAt } = body;
+    const { suscriptionId, endedAt, status } = body;
 
-    if (!suscriptionId && !endedAt) {
+    if (!suscriptionId && !endedAt && !status) {
       return NextResponse.json(
-        { error: "Debe enviar al menos suscriptionId o endedAt" },
+        { error: "Debe enviar al menos suscriptionId, endedAt o status" },
         { status: 400 }
       );
     }
@@ -23,6 +23,7 @@ export async function PUT(
     };
     if (suscriptionId) updateFields.suscriptionId = suscriptionId;
     if (endedAt) updateFields.endedAt = endedAt;
+    if (status === "active" || status === "inactive") updateFields.status = status;
 
     const client = await clientPromise;
     const db = client.db();
